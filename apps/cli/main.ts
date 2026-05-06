@@ -1,7 +1,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { match } from "ts-pattern";
-import fs from "fs";
+import * as fs from "fs";
 import { assemble } from "../../core/assembler";
 import { BalancedTernary as BT } from "../../core/balanced_ternary";
 import { Core } from "../../core/simulator";

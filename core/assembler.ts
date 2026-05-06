@@ -80,6 +80,13 @@ function readline(
   const label = labelRes !== null ? labelRes[1] : null;
   line = line.substring(labelRe.lastIndex).trim();
 
+  if (line.length == 0) {
+    return {
+      res: [],
+      label: label,
+    };
+  }
+
   //ニーモニック
   const mnemonicRe = /^([A-Z]\w*)/g;
   const mnemonicRes = mnemonicRe.exec(line);

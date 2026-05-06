@@ -11,7 +11,7 @@ Libra the Processor のシミュレータ
 
 ## ローカル
 
-### 実行
+### シミュレータ
 
 `npx tsx apps/cli/main.ts <program file> [--asm] [--snap] [-i <in port file>] [--ifmt <format>] [-o <out port file>] [--ofmt <format>]`
 
@@ -23,6 +23,10 @@ Libra the Processor のシミュレータ
 - format: ファイルの形式. `ternary`, `decimal`, `ascii` のいずれか. デフォルトは `ternary`.
 
 標準入力から読む場合、`ascii` は 1 文字ずつ、`ternary` と `decimal` は 1 行ずつ処理する. 入力がない場合は待機し、EOF の場合はエラーになる.
+
+### アセンブラ
+
+`npx tsx apps/cli/assembler.ts <program file>`
 
 ## ウェブ
 
