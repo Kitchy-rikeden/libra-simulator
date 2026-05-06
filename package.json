@@ -1,0 +1,35 @@
+{
+  "name": "libra-simulator",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build:web": "vite build --config apps/web/vite.config.ts",
+    "dev:web": "vite --config apps/web/vite.config.ts",
+    "build:cli": "tsc -p apps/cli/tsconfig.json",
+    "dev:cli": "tsx apps/cli/main.ts",
+    "build:core": "tsc -p core/tsconfig.json"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.11.0",
+    "ts-pattern": "^5.5.0",
+    "yargs": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/yargs": "^17.0.35",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "tsx": "^4.21.0",
+    "typescript": "^5.2.2",
+    "vite": "^7.3.0"
+  }
+}

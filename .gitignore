@@ -1,0 +1,5 @@
+node_modules
+
+core/dist
+apps/web/dist
+apps/cli/dist
