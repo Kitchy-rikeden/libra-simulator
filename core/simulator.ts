@@ -49,8 +49,8 @@ class ALU {
         return r;
     }
     static and(a: t5, b: t5): t5 {
-        const sa = BT.intToStr(a).padStart(5, "0");
-        const sb = BT.intToStr(b).padStart(5, "0");
+        const sa = BT.intToStr(a, 5);
+        const sb = BT.intToStr(b, 5);
         let s = "";
         for (let i = 0; i < 5; i++) {
             if (sa[i] === "#" || sb[i] === "#") {
@@ -66,8 +66,8 @@ class ALU {
         return BT.strToInt(s);
     }
     static or(a: t5, b: t5): t5 {
-        const sa = BT.intToStr(a).padStart(5, "0");
-        const sb = BT.intToStr(b).padStart(5, "0");
+        const sa = BT.intToStr(a, 5);
+        const sb = BT.intToStr(b, 5);
         let s = "";
         for (let i = 0; i < 5; i++) {
             if (sa[i] === "1" || sb[i] === "1") {

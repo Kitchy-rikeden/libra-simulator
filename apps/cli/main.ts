@@ -7,13 +7,14 @@ import { BalancedTernary as BT } from "../../core/balanced_ternary";
 import { Core } from "../../core/simulator";
 
 type format = "ternary" | "decimal" | "ascii";
+const EOF_ERROR_MESSAGE = "EOF";
 
 function isFormat(value: string): value is format {
     return value === "ternary" || value === "decimal" || value === "ascii";
 }
 
 function makeReader(text: string, fmt: format): () => number {
-    let values: number[];
+    let values: number[] = [];
     match(fmt)
         .with("ternary", () => {
             const lines = text ? text.split(/\r?\n/) : [];
@@ -33,10 +34,56 @@ function makeReader(text: string, fmt: format): () => number {
     let i = 0;
     return () => {
         if (i >= values.length) {
-            throw new Error("No more input");
+            throw new Error(EOF_ERROR_MESSAGE);
         }
-        return values[i];
+        return values[i++];
     };
+}
+
+function readStdinByteOrEof(): string | undefined {
+    const buffer = Buffer.alloc(1);
+    const bytesRead = fs.readSync(0, buffer, 0, 1, null);
+    if (bytesRead === 0) {
+        return undefined;
+    }
+    return buffer.toString("utf-8", 0, bytesRead);
+}
+
+function readStdinByte(): string {
+    const c = readStdinByteOrEof();
+    if (c === undefined) {
+        throw new Error(EOF_ERROR_MESSAGE);
+    }
+    return c;
+}
+
+function readStdinLine(): string {
+    let line = "";
+    while (true) {
+        const c = readStdinByteOrEof();
+        if (c === undefined) {
+            if (line.length === 0) {
+                throw new Error(EOF_ERROR_MESSAGE);
+            }
+            return line.endsWith("\r") ? line.slice(0, -1) : line;
+        }
+        if (c === "\n") {
+            return line.endsWith("\r") ? line.slice(0, -1) : line;
+        }
+        line += c;
+    }
+}
+
+function makeStdinReader(fmt: format): () => number {
+    return () => match(fmt)
+        .with("ternary", () => BT.strToInt(readStdinLine()))
+        .with("decimal", () => Number(readStdinLine()))
+        .with("ascii", () => BT.asciiToInt(readStdinByte()))
+        .exhaustive();
+}
+
+function isEofError(e: unknown): boolean {
+    return e instanceof Error && e.message === EOF_ERROR_MESSAGE;
 }
 
 function makeWriter(outputPath: string | undefined, fmt: format): (value: number) => void {
@@ -50,7 +97,7 @@ function makeWriter(outputPath: string | undefined, fmt: format): (value: number
 
     return (value: number) => {
         const s = match(fmt)
-            .with("ternary", () => BT.intToStr(value) + "\n")
+            .with("ternary", () => BT.intToStr(value, 5) + "\n")
             .with("decimal", () => value.toString() + "\n")
             .with("ascii", () => BT.intToAscii(value))
             .exhaustive();
@@ -78,7 +125,7 @@ function main() {
         .option("i", {
             alias: "input",
             type: "string",
-            describe: "input file",
+            describe: "input file. stdin is used if omitted",
         })
         .option("ifmt", {
             type: "string",
@@ -113,8 +160,9 @@ function main() {
     const program = argv.asm ? assemble(program_text).join("\n") : program_text;
 
     // 入力関数
-    const input_text = argv.i === undefined ? "" : fs.readFileSync(argv.i, { encoding: "utf-8" });
-    const input_func = makeReader(input_text, argv.ifmt);
+    const input_func = argv.i === undefined
+        ? makeStdinReader(argv.ifmt)
+        : makeReader(fs.readFileSync(argv.i, { encoding: "utf-8" }), argv.ifmt);
 
     // 出力関数
     const output_func = makeWriter(argv.o, argv.ofmt);
@@ -125,24 +173,32 @@ function main() {
     if (argv.snap) {
         console.log("opname,description,pc,sp,sign,a,b,c");
     }
-    while (true) {
-        const info = core.step();
-        if (argv.snap) {
-            const log = [
-                info.opname,
-                info.description,
-                info.snap.pc,
-                info.snap.sp,
-                info.snap.sign,
-                info.snap.a,
-                info.snap.b,
-                info.snap.c
-            ].join(",");
-            console.log(log)
+    try {
+        while (true) {
+            const info = core.step();
+            if (argv.snap) {
+                const log = [
+                    info.opname,
+                    info.description,
+                    info.snap.pc,
+                    info.snap.sp,
+                    info.snap.sign,
+                    info.snap.a,
+                    info.snap.b,
+                    info.snap.c
+                ].join(",");
+                console.log(log)
+            }
+            if (info.opname === "HALT") {
+                break;
+            }
         }
-        if (info.opname === "HALT") {
-            break;
+    }
+    catch (e) {
+        if (!isEofError(e)) {
+            throw e;
         }
+        console.error("EOF");
     }
     console.log("");    // flush 用
 }

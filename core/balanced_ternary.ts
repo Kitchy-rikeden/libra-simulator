@@ -35,7 +35,7 @@ export class BalancedTernary {
         return n;
     }
 
-    static intToStr(n: number): string {
+    static intToStr(n: number, digits?: number): string {
         let base = 1;
 
         while (true) {
@@ -59,7 +59,7 @@ export class BalancedTernary {
             base = Math.floor(base / 3);
         }
 
-        return res;
+        return digits === undefined ? res : res.padStart(digits, "0");
     }
 
     static intToAscii(n: number): string {
