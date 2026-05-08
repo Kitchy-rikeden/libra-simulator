@@ -105,6 +105,19 @@ function makeWriter(outputPath: string | undefined, fmt: format): (value: number
     };
 }
 
+function othelloDebug(mem: number[]) {
+    console.log("    A B C D E F G H");
+    for (let row = 0; row < 10; row++) {
+        let items: string[] = [row.toString()];
+        for (let col = 0; col < 9; col++) {
+            const pos = row * 9 + col;
+            const cell = mem[pos + 121];
+            items.push(cell == 1 ? "w" : cell == -1 ? "B" : cell == 0 ? " " : cell.toString());
+        }
+        console.log(items.join(" "));
+    }
+}
+
 function main() {
     const argv = yargs(hideBin(process.argv))
         .usage("$0 <program file> [--asm] [--snap] [-i <in port file>] [--ifmt <format>] [-o <out port file>] [--ofmt <format>]")
@@ -142,6 +155,11 @@ function main() {
             default: "ternary",
             describe: "output file format"
         })
+        .option("othello", {
+            type: "boolean",
+            default: false,
+            describe: "enable othello mode"
+        })
         .parseSync();
 
     // 引数チェック
@@ -165,7 +183,17 @@ function main() {
         : makeReader(fs.readFileSync(argv.i, { encoding: "utf-8" }), argv.ifmt);
 
     // 出力関数
-    const output_func = makeWriter(argv.o, argv.ofmt);
+    let output_func = makeWriter(argv.o, argv.ofmt);
+    let othelloFlag = false;
+    if (argv.othello) {
+        output_func = (value: number) => {
+            const c = BT.intToAscii(value);
+            process.stdout.write(c);
+            if (c == '\n') {
+                othelloFlag = true;
+            }
+        };
+    }
 
     // シミュレータ
     const core = new Core(program, output_func, input_func);
@@ -191,6 +219,10 @@ function main() {
             }
             if (info.opname === "HALT") {
                 break;
+            }
+            if (othelloFlag) {
+                othelloFlag = false;
+                othelloDebug(core.memory.heap);
             }
         }
     }
