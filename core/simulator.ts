@@ -90,7 +90,7 @@ class ALU {
         return r;
     }
     static sr(a: t5): t5 {
-        const x = Math.trunc(a / 3);    // ゼロ方向に切り捨て
+        const x = Math.round(a / 3);    // 四捨五入
         const [_, r] = balancedDiv(x, 243);
         return r;
     }
